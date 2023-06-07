@@ -78,7 +78,7 @@ const userCtrl = {
 }
 
 const createAccessToken = (payload) => {
-    return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {expiresIn : '1h'})
+    return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {expiresIn : '365d'})
 }
 
 module.exports = userCtrl
