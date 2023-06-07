@@ -17,7 +17,7 @@ app.use(fileUpload({
 app.use('/user', require('./routes/userRoutes'))
 app.use('/api', require('./routes/apiRoutes'))
 
-app.get("/", (req, res) => { res.status(200).json({msg: "Working Good"}) })
+app.get("/", (req, res) => { res.status(200).json({msg: "Working Good 123 "}) })
 
 mongoose.connect(process.env.MONGODB_URL).then(() => { console.log('Mongo DB Connected') }).catch(() => { console.log('Unable To Connect') })
 
