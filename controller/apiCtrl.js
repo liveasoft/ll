@@ -162,13 +162,13 @@ const apiCtrl = {
                                             const diffInDays = Math.floor(diffInMilliseconds / (1000 * 60 * 60 * 24));
                                             // const fiveDaysAgo = new Date();
                                             // fiveDaysAgo.setDate(today.getDate() - 5); // Date 5 days ago
-                                            if (diffInDays > 5){
+                                            if (diffInDays > 5) {
                                                 await workerque.findByIdAndUpdate(data[0]._id, { status: 0 })
                                                 console.log('QUE UPDATED')
-                                            }else{
+                                            } else {
                                                 console.log('ALREADY UPDATED RECENTLY WITHIN 5 DAYS')
                                             }
-                                                
+
                                         } catch (error) {
                                             console.log(error)
                                         }
@@ -179,10 +179,52 @@ const apiCtrl = {
                                 }
                             })
                             .catch(error => {
-                                console.error('Error fetching URL:' +  url);
+                                console.error('Error fetching URL:' + url);
                             });
                     }
 
+                })
+                .catch(err => {
+                    res.status(500).json({ msg: err.message })
+                })
+
+        } catch (err) {
+            res.status(500).json({ msg: err.message })
+        }
+    },
+    profiles_listing: async (req, res) => {
+        try {
+            const { type, page, sortby, filters } = req.body
+
+            if (!type || !page)
+                return res.status(400).json({ error: "All feilds are required" })
+
+            const query = {
+                "user_profile.type": type
+            }
+
+            const pageNumber = page;  // The page number you want to retrieve
+            const pageSize = 2;  // The number of documents per page
+
+            const sort = {
+                [sortby === 'followers' ? 'user_profile.followers' : 'user_profile.engagements']: -1
+            }
+
+
+
+            dataset.find(query, {
+                "user_profile.picture" : 1,
+                "user_profile.user_id" : 1,
+                "user_profile.url" : 1,
+                "user_profile.followers" : 1,
+                "user_profile.engagements" : 1,
+                "user_profile.fullname" : 1,
+                "_id" : 0
+            })
+                .limit(pageSize).skip((pageNumber - 1) * pageSize)
+                .sort(sort)
+                .then(docs => {
+                    res.status(200).json({ success: 1, data: docs })
                 })
                 .catch(err => {
                     res.status(500).json({ msg: err.message })
