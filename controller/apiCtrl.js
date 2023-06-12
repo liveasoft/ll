@@ -199,9 +199,9 @@ const apiCtrl = {
             if (!type || !page)
                 return res.status(400).json({ error: "All feilds are required" })
 
-            const query = {
-                "user_profile.type": type
-            }
+                const query = {
+                    "user_profile.type": type
+                }
 
             const pageNumber = page;  // The page number you want to retrieve
             const pageSize = 2;  // The number of documents per page
@@ -212,23 +212,30 @@ const apiCtrl = {
 
 
 
-            dataset.find(query, {
-                "user_profile.picture" : 1,
-                "user_profile.user_id" : 1,
-                "user_profile.url" : 1,
-                "user_profile.followers" : 1,
-                "user_profile.engagements" : 1,
-                "user_profile.fullname" : 1,
-                "_id" : 0
+            dataset.countDocuments(query)
+            .then(totalCount => {
+                dataset.find(query, {
+                        "user_profile.picture": 1,
+                        "user_profile.user_id": 1,
+                        "user_profile.username": 1,
+                        "user_profile.url": 1,
+                        "user_profile.followers": 1,
+                        "user_profile.engagements": 1,
+                        "user_profile.fullname": 1,
+                        "_id": 0
+                    })
+                    .limit(pageSize).skip((pageNumber - 1) * pageSize)
+                    .sort(sort)
+                    .then(docs => {
+                        res.status(200).json({ success: 1, data: docs, totalRecords: totalCount, totalPages: Math.ceil(totalCount / pageSize), recordsPerPage : pageSize });
+                    })
+                    .catch(err => {
+                        res.status(500).json({ msg: err.message });
+                    });
             })
-                .limit(pageSize).skip((pageNumber - 1) * pageSize)
-                .sort(sort)
-                .then(docs => {
-                    res.status(200).json({ success: 1, data: docs })
-                })
-                .catch(err => {
-                    res.status(500).json({ msg: err.message })
-                })
+            .catch(err => {
+                res.status(500).json({ msg: err.message });
+            });
 
         } catch (err) {
             res.status(500).json({ msg: err.message })
