@@ -492,7 +492,59 @@ const apiCtrl = {
         } catch (err) {
             res.status(500).json({ msg: err.message })
         }
+    },
+    topic_tags: async (req, res) => {
+        try {
+            const { type, q } = req.body
+
+            console.log(req.body)
+            if (!type || !q)
+                return res.status(400).json({ error: "All feilds are required" })
+
+            dataset.distinct('user_profile.relevant_tags.tag', { 'user_profile.type': type })
+                .then(docs => {
+                    // Sort the tags based on similarity to the variable
+                    docs.sort((a, b) => calculateSimilarity(q, b) - calculateSimilarity(q, a))
+
+                    // Limit to the top 10 tags
+                    const topTags = docs.slice(0, 10);
+
+                    res.status(200).json({ success: 1, data: topTags })
+                })
+                .catch(err => {
+                    res.status(500).json({ msg: err.message })
+                })
+
+        } catch (err) {
+            res.status(500).json({ msg: err.message })
+        }
+    },
+    search_audience: async (req, res) => {
+        try {
+            const { type, q, limit, key } = req.body
+
+            if (!type || !q || !limit || !key)
+                return res.status(400).json({ error: "All feilds are required" })
+                
+            res.status(200).json({ success: "Development in process"})
+
+        } catch (err) {
+            res.status(500).json({ msg: err.message })
+        }
     }
+}
+
+// Function to calculate similarity between two strings
+function calculateSimilarity(a, b) {
+    // You can implement your own similarity calculation logic here
+    // This is just a basic example that counts the number of common characters
+    let count = 0;
+    for (let i = 0; i < a.length; i++) {
+        if (b.includes(a[i])) {
+            count++;
+        }
+    }
+    return count;
 }
 
 
