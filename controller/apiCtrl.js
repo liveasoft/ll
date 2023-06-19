@@ -415,13 +415,43 @@ const apiCtrl = {
 
             // SIMILAR INFLUENCER
             if (filters.relevance && filters.relevance.value) {
-                query['user_profile.similar_users'] = { $elemMatch: { username: new RegExp(filters.relevance.value.substring(1), "i") } }
+                const tagsArray = filters.relevance.value.trim().split(/[@#]/).map(tag => tag.trim()).filter(tag => tag !== '')
+                query.$or = tagsArray.map(tag => {
+                    return { 'user_profile.relevant_tags.tag': tag };
+                })
             }
 
-
             // GROWTH RATE
-            if (filters.followers_growth && filters.followers_growth.interval) {
-           
+            if (filters.followers_growth && filters.followers_growth.interval && filters.followers_growth.value) {
+                const currentDate = new Date();
+                const numMonths = filters.followers_growth.interval; // Specify the number of months for progress calculation
+                const startDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - numMonths + 1, 1); // Calculate the start date
+
+                const growthRateQuery = {
+                    $expr: {
+                        $gte: [
+                            {
+                                $divide: [
+                                    {
+                                        $subtract: [
+                                            { $arrayElemAt: ['$user_profile.stat_history.followers', 6] },
+                                            { $arrayElemAt: ['$user_profile.stat_history.followers', 6 - numMonths] }
+                                        ]
+                                    },
+                                    { $arrayElemAt: ['$user_profile.stat_history.followers', 6 - numMonths] }
+                                ]
+                            },
+                            filters.followers_growth.value
+                        ]
+                    },
+                    'user_profile.stat_history.month': {
+                        $gte: startDate.toISOString().slice(0, 7)
+                    }
+                };
+
+                query = {
+                    $and: [query, growthRateQuery]
+                };
             }
 
 
