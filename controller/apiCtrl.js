@@ -14,7 +14,7 @@ const apiCtrl = {
 
             const query = {
                 "user_profile.type": type,
-                "user_profile.user_id": { $regex: user_id, $options: "i" } // regex => regular expression , options i = incase sensitive
+                "user_profile.username": { $regex: user_id, $options: "i" } // regex => regular expression , options i = incase sensitive
             }
 
             const response_params = {
@@ -51,7 +51,7 @@ const apiCtrl = {
 
             const query = {
                 "user_profile.type": type,
-                "user_profile.user_id": user_id
+                "user_profile.username": user_id
             }
 
 
@@ -555,7 +555,7 @@ const apiCtrl = {
             }
 
             dataset.find(query, response_params)
-                .limit(5)
+                .limit(limit)
                 .sort({
                     "user_profile.username": -1
                 })
