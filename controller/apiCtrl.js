@@ -525,8 +525,46 @@ const apiCtrl = {
 
             if (!type || !q || !limit || !key)
                 return res.status(400).json({ error: "All feilds are required" })
-                
-            res.status(200).json({ success: "Development in process"})
+            
+
+            const query = {
+                "user_profile.type": type,
+            }
+
+            if(key == 'lookalike'){
+                query["audience_followers.data.audience_lookalikes"] = {
+                    $elemMatch: {
+                        "username": new RegExp(q, "i"),
+                    }
+                }
+            }else if(key == 'topic-tags'){
+                query["user_profile.relevant_tags"] = {
+                    $elemMatch: {
+                        "tag": new RegExp(q, "i"),
+                    }
+                }
+            }
+
+            const response_params = {
+                _id: 0,
+                'user_profile.type': 1,
+                'user_profile.user_id': 1,
+                'user_profile.picture': 1,
+                'user_profile.followers': 1,
+                'user_profile.fullname': 1
+            }
+
+            dataset.find(query, response_params)
+                .limit(5)
+                .sort({
+                    "user_profile.username": -1
+                })
+                .then(docs => {
+                    res.status(200).json({ success: 1, data: docs })
+                })
+                .catch(err => {
+                    res.status(500).json({ msg: err.message })
+                })
 
         } catch (err) {
             res.status(500).json({ msg: err.message })
