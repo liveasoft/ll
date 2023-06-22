@@ -21,6 +21,7 @@ const apiCtrl = {
                 _id: 0,
                 'user_profile.type': 1,
                 'user_profile.user_id': 1,
+                'user_profile.username': 1,
                 'user_profile.picture': 1,
                 'user_profile.followers': 1,
                 'user_profile.fullname': 1
